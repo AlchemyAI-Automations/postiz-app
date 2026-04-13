@@ -29,10 +29,6 @@ export class LinkedinPageProvider
     'openid',
     'profile',
     'w_member_social',
-    'r_basicprofile',
-    'rw_organization_admin',
-    'w_organization_social',
-    'r_organization_social',
   ];
 
   override editor = 'normal' as const;
@@ -123,7 +119,7 @@ export class LinkedinPageProvider
   override async generateAuthUrl() {
     const state = makeId(6);
     const codeVerifier = makeId(30);
-    const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&prompt=none&client_id=${
+    const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&prompt=consent&client_id=${
       process.env.LINKEDIN_CLIENT_ID
     }&redirect_uri=${encodeURIComponent(
       `${process.env.FRONTEND_URL}/integrations/social/linkedin-page`
