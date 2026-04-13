@@ -1,31 +1,31 @@
 :root {
   .dark {
-    --new-back-drop: #000;
-    --new-settings: #242323;
-    --new-border: #252525;
-    --new-bgColor: #0e0e0e;
-    --new-bgColorInner: #1a1919;
-    --new-sep: #454444;
-    --new-bgLineColor: #212121;
-    --new-textItemFocused: #1a1919;
-    --new-textItemBlur: #999999;
-    --new-boxFocused: #fff;
+    --new-back-drop: #010b10;
+    --new-settings: #0A1D26;
+    --new-border: #0f2633;
+    --new-bgColor: #010b10;
+    --new-bgColorInner: #0A1D26;
+    --new-sep: #1a3544;
+    --new-bgLineColor: #0d2330;
+    --new-textItemFocused: #0A1D26;
+    --new-textItemBlur: #B5C1BF;
+    --new-boxFocused: #9DFFF9;
     --new-textColor: 255 255 255;
-    --new-blockSeparator: #272626;
-    --new-btn-simple: #313030;
-    --new-btn-text: #ffffff;
-    --new-btn-primary: #612bd3;
-    --new-ai-btn: #d82d7e;
-    --new-box-hover: #201f1f;
-    --new-table-border: #2b2b2b;
-    --new-table-header: #1e1d1d;
-    --new-table-text: #9c9c9c;
-    --new-table-text-focused: #fc69ff;
-    --new-small-strips: #191818;
-    --new-big-strips: #161515;
-    --new-col-color: #2c2b2b;
-    --new-menu-dots: #696868;
-    --new-menu-hover: #fff;
+    --new-blockSeparator: #0f2633;
+    --new-btn-simple: #0f2633;
+    --new-btn-text: #010b10;
+    --new-btn-primary: #9DFFF9;
+    --new-ai-btn: #B07DFF;
+    --new-box-hover: #0f2633;
+    --new-table-border: #0f2633;
+    --new-table-header: #0A1D26;
+    --new-table-text: #B5C1BF;
+    --new-table-text-focused: #9DFFF9;
+    --new-small-strips: #0A1D26;
+    --new-big-strips: #0A1D26;
+    --new-col-color: #0f2633;
+    --new-menu-dots: #6E7E7D;
+    --new-menu-hover: #9DFFF9;
     --menu-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.5);
     --popup-color: rgba(65, 64, 66, 0.3);
     --border-preview: transparent;
@@ -98,15 +98,15 @@
 
 :root {
   .dark {
-    --color-primary: #0e0e0e;
-    --color-secondary: #090b13;
+    --color-primary: #010b10;
+    --color-secondary: #0A1D26;
     --color-text: #ffffff;
-    --color-third: #080b13;
-    --color-forth: #612ad5;
+    --color-third: #0A1D26;
+    --color-forth: #9DFFF9;
     --color-fifth: var(--new-bgLineColor);
     --color-sixth: var(--new-table-header);
-    --color-seventh: #7236f1;
-    --color-gray: #8c8c8c;
+    --color-seventh: #52F7EF;
+    --color-gray: #B5C1BF;
     --color-input: var(--new-table-header);
     --color-input-text: #64748b;
     --color-table-border: var(--new-table-border);
