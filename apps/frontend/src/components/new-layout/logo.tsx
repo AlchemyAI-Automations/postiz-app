@@ -2,12 +2,12 @@
 
 export const Logo = () => {
   return (
-    <img
-      src="/alchemyai-icon.svg"
-      alt="AlchemyAI"
-      width={60}
-      height={60}
-      className="mt-[8px] min-w-[60px] min-h-[60px]"
-    />
+    <div className="w-full flex justify-center items-center mt-[8px]">
+      <img
+        src="/alchemyai-icon.svg"
+        alt="AlchemyAI"
+        className="w-[48px] h-[48px] object-contain"
+      />
+    </div>
   );
 };

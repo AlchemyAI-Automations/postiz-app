@@ -13,7 +13,7 @@
     --new-textColor: 255 255 255;
     --new-blockSeparator: #0f2633;
     --new-btn-simple: #0f2633;
-    --new-btn-text: #010b10;
+    --new-btn-text: #ffffff;
     --new-btn-primary: #9DFFF9;
     --new-ai-btn: #B07DFF;
     --new-box-hover: #0f2633;
@@ -236,5 +236,23 @@
     --color-custom54: #afb8c1;
     --color-custom55: #d5d7e1;
     --color-modalCustom: transparent;
+  }
+}
+
+// AlchemyAI overrides — fix contrast on primary buttons (primary is light cyan)
+.dark {
+  // Any button/element with bg-btnPrimary should use dark text
+  .bg-btnPrimary,
+  [class*="bg-btnPrimary"] {
+    color: #010b10 !important;
+    * {
+      color: #010b10 !important;
+    }
+  }
+
+  // Active tabs/toggles with primary bg
+  .bg-forth,
+  [class*="bg-forth"] {
+    color: #010b10 !important;
   }
 }
