@@ -43,10 +43,10 @@ import { MeweProvider } from '@gitroom/nestjs-libraries/integrations/social/mewe
 export const socialIntegrationList: Array<SocialAbstract & SocialProvider> = [
   new XProvider(),
   new LinkedinProvider(),
-  // new LinkedinPageProvider(),
+  new LinkedinPageProvider(),
   new RedditProvider(),
   new InstagramProvider(),
-  // new InstagramStandaloneProvider(),
+  new InstagramStandaloneProvider(),
   new FacebookProvider(),
   // new ThreadsProvider(),
   new YoutubeProvider(),
