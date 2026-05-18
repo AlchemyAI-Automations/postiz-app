@@ -79,6 +79,19 @@ export abstract class SocialAbstract {
     try {
       value = await func();
     } catch (err) {
+      // AlchemyAI diagnostic (2026-05-18): runInConcurrent swallows the
+      // raw provider error and only keeps "Unknown Error" when
+      // handleErrors does not recognise the string. Log the full raw
+      // error so we can see exactly what the social network returned.
+      // TODO: remove once the X publish failure is diagnosed.
+      try {
+        console.error(
+          '[AlchemyAI][runInConcurrent] raw provider error:',
+          safeStringify(err),
+        );
+      } catch {
+        console.error('[AlchemyAI][runInConcurrent] raw provider error (non-serializable):', err);
+      }
       const handle = this.handleErrors(safeStringify(err), 200);
       value = { err: true, value: 'Unknown Error', ...(handle || {}) };
     }
