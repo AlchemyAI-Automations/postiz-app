@@ -177,6 +177,16 @@ export abstract class SocialAbstract {
       );
     }
 
+    // AlchemyAI diagnostic (2026-05-18): the raw social-network response
+    // body (`json`) is lost when BadBody is converted to a Temporal
+    // ApplicationFailure. Log it so we can see exactly what the network
+    // rejected. TODO: remove once the X publish failure is diagnosed.
+    console.error(
+      '[AlchemyAI][fetch] non-2xx from',
+      url,
+      'status=' + request.status,
+      'body=' + json,
+    );
     throw new BadBody(
       identifier,
       json,
