@@ -387,24 +387,38 @@ export class XProvider extends SocialAbstract implements SocialProvider {
       await Promise.all(
         postDetails.flatMap((p) =>
           p?.media?.flatMap(async (m) => {
+            // AlchemyAI fix (2026-05-18): the upstream pipeline always
+            // encoded non-MP4 media as a GIF (`.gif()`) but declared the
+            // `media_type` based on file extension (e.g. `image/jpeg`).
+            // That mismatch made X's `media/upload` reject every JPG/PNG
+            // post with an opaque "Unknown Error". We now pick the output
+            // codec from the source MIME so the buffer format always
+            // matches the declared media_type.
+            const sourceBuffer = Buffer.from(await readOrFetch(m.path));
+            const mime = (lookup(m.path) || 'image/jpeg') as string;
+            let mediaBuffer: Buffer;
+            if (hasExtension(m.path, 'mp4')) {
+              mediaBuffer = sourceBuffer;
+            } else {
+              const pipeline = sharp(sourceBuffer, {
+                animated: mime === 'image/gif',
+              }).resize({ width: 1000 });
+              if (mime === 'image/gif') {
+                mediaBuffer = await pipeline.gif().toBuffer();
+              } else if (mime === 'image/png') {
+                mediaBuffer = await pipeline.png().toBuffer();
+              } else if (mime === 'image/webp') {
+                mediaBuffer = await pipeline.webp().toBuffer();
+              } else {
+                mediaBuffer = await pipeline.jpeg({ quality: 90 }).toBuffer();
+              }
+            }
             return {
               id: await this.runInConcurrent(
                 async () =>
-                  client.v2.uploadMedia(
-                    hasExtension(m.path, 'mp4')
-                      ? Buffer.from(await readOrFetch(m.path))
-                      : await sharp(await readOrFetch(m.path), {
-                          animated: lookup(m.path) === 'image/gif',
-                        })
-                          .resize({
-                            width: 1000,
-                          })
-                          .gif()
-                          .toBuffer(),
-                    {
-                      media_type: (lookup(m.path) || '') as any,
-                    }
-                  ),
+                  client.v2.uploadMedia(mediaBuffer, {
+                    media_type: mime as any,
+                  }),
                 true
               ),
               postId: p.id,
