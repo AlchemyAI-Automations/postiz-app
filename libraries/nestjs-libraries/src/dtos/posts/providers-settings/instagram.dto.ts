@@ -1,17 +1,54 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDefined,
   IsIn,
+  IsNumber,
   IsString,
+  Max,
+  Min,
   ValidateNested,
   IsOptional,
 } from 'class-validator';
+import { JSONSchema } from 'class-validator-jsonschema';
 
 export class Collaborators {
   @IsDefined()
   @IsString()
   label: string;
+}
+
+export class InstagramAudio {
+  @IsDefined()
+  @IsString()
+  id: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  artist?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  audio_volume?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  video_volume?: number;
 }
 export class InstagramDto {
   @IsIn(['post', 'story'])
@@ -30,4 +67,17 @@ export class InstagramDto {
   @IsArray()
   @IsOptional()
   collaborators: Collaborators[];
+
+  @Type(() => InstagramAudio)
+  @ValidateNested()
+  @IsOptional()
+  audio?: InstagramAudio;
+
+  @IsOptional()
+  @IsBoolean()
+  @JSONSchema({
+    description:
+      'Labels the post as AI generated (Instagram shows the "AI info" label). Works for posts, reels, carousels and stories.',
+  })
+  made_with_ai?: boolean;
 }
