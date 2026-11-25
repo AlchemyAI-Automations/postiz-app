@@ -167,6 +167,21 @@ function safeStringify(obj: any) {
   });
 }
 
+// AlchemyAI: the diagnostic logs below must never write credentials to the
+// container logs (Meta providers send access_token in the query string, and
+// provider errors can carry Authorization headers).
+const redactSecrets = (text: string) =>
+  String(text)
+    .replace(
+      /((?:access_token|refresh_token|client_secret|token|key|secret)=)[^&\s"']+/gi,
+      '$1[redacted]'
+    )
+    .replace(
+      /("(?:authorization|access_token|refresh_token|accessToken|refreshToken|client_secret)"\s*:\s*")[^"]*/gi,
+      '$1[redacted]'
+    )
+    .replace(/(Bearer|OAuth)\s+[^\s"',]+/gi, '$1 [redacted]');
+
 export abstract class SocialAbstract {
   abstract identifier: string;
   maxConcurrentJob = 1;
@@ -575,10 +590,12 @@ export abstract class SocialAbstract {
       try {
         console.error(
           '[AlchemyAI][runInConcurrent] raw provider error:',
-          safeStringify(err),
+          redactSecrets(safeStringify(err)),
         );
       } catch {
-        console.error('[AlchemyAI][runInConcurrent] raw provider error (non-serializable):', err);
+        console.error(
+          '[AlchemyAI][runInConcurrent] raw provider error (non-serializable)'
+        );
       }
       // Already classified by the provider (e.g. mediaSize/mediaChunk): keep
       // its message instead of re-wrapping it as 'Unknown Error'.
@@ -718,9 +735,9 @@ export abstract class SocialAbstract {
     // rejected. TODO: remove once the X publish failure is diagnosed.
     console.error(
       '[AlchemyAI][fetch] non-2xx from',
-      url,
+      redactSecrets(url),
       'status=' + request.status,
-      'body=' + json,
+      'body=' + redactSecrets(json),
     );
     throw new BadBody(
       identifier,
