@@ -1,0 +1,85 @@
+name: "AlchemyAI Upstream Watch"
+
+# Weekly report of what is pending from gitroomhq/postiz-app: new commits,
+# conflicts with the AlchemyAI modifications (trial merge, nothing is pushed),
+# new security advisories and the dependency audit. The merge itself is done
+# by hand following ALCHEMYAI.md: GITHUB_TOKEN cannot push upstream changes
+# to .github/workflows.
+
+on:
+  schedule:
+    - cron: '17 14 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    if: github.repository == 'AlchemyAI-Automations/postiz-app'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Trial merge with upstream
+        id: merge
+        run: |
+          git remote add upstream https://github.com/gitroomhq/postiz-app.git
+          git fetch --quiet upstream main --tags
+          behind=$(git rev-list --count HEAD..upstream/main)
+          latest_tag=$(git describe --tags --abbrev=0 upstream/main 2>/dev/null || echo '-')
+          echo "behind=$behind" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if [ "$behind" != "0" ] && ! git merge --no-commit --no-ff upstream/main >/dev/null 2>&1; then
+            git diff --name-only --diff-filter=U > conflicts.txt
+          else
+            : > conflicts.txt
+          fi
+          git merge --abort 2>/dev/null || true
+
+      - name: New security advisories (last 8 days)
+        run: |
+          since=$(date -u -d '8 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          gh api 'repos/gitroomhq/postiz-app/security-advisories?per_page=100' \
+            --jq ".[] | select(.published_at >= \"$since\") | \"- \(.severity) \(.ghsa_id): \(.summary) (fixed in \(.vulnerabilities[0].patched_versions // \"?\"))\"" \
+            > advisories.txt || echo '- (could not read advisories)' > advisories.txt
+
+      - name: Dependency audit of main
+        run: |
+          npx -y pnpm@10.6.1 audit --prod 2>/dev/null | tail -1 > audit.txt || true
+          [ -s audit.txt ] || echo 'No vulnerabilities reported' > audit.txt
+
+      - name: Open or update the report issue
+        run: |
+          {
+            echo "Upstream: **${{ steps.merge.outputs.behind }}** new commits (latest tag \`${{ steps.merge.outputs.latest_tag }}\`)."
+            echo
+            echo '### Conflicts with the AlchemyAI modifications'
+            if [ -s conflicts.txt ]; then sed 's/^/- `/; s/$/`/' conflicts.txt; else echo 'None (or nothing new).'; fi
+            echo
+            echo '### New Postiz security advisories'
+            if [ -s advisories.txt ]; then cat advisories.txt; else echo 'None this week.'; fi
+            echo
+            echo '### pnpm audit --prod (main)'
+            cat audit.txt
+            echo
+            echo 'Procedure: ALCHEMYAI.md, section "Sincronizar con upstream".'
+          } > report.md
+          if [ "${{ steps.merge.outputs.behind }}" = "0" ] && [ ! -s advisories.txt ]; then
+            echo 'Nothing pending.'
+            exit 0
+          fi
+          existing=$(gh issue list --state open --search 'in:title "Upstream pending"' --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file report.md
+          else
+            gh issue create --title 'Upstream pending (gitroomhq/postiz-app)' --body-file report.md
+          fi
