@@ -37,12 +37,21 @@ if [ "$overdue" != "0" ] && [ "${FORCE:-0}" != "1" ]; then
 fi
 
 # 4. Imagen nueva (compose usa :latest)
+# (comandos sueltos: dentro de una cadena && un fallo no detiene set -e)
 case "$TARGET" in
-  rollback-*) docker tag "postiz-app:$TARGET" "$IMG:latest" ;;
-  latest) docker pull --quiet "$IMG:latest" ;;
-  *) docker pull --quiet "$IMG:$TARGET" && docker tag "$IMG:$TARGET" "$IMG:latest" ;;
+  rollback-*)
+    docker tag "postiz-app:$TARGET" "$IMG:latest"
+    ;;
+  latest)
+    docker pull --quiet "$IMG:latest"
+    ;;
+  *)
+    docker pull --quiet "$IMG:$TARGET"
+    docker tag "$IMG:$TARGET" "$IMG:latest"
+    ;;
 esac
-log "imagen: $(docker image inspect "$IMG:latest" -f '{{.Id}}' | cut -c8-19)"
+want=$(docker image inspect "$IMG:latest" -f '{{.Id}}')
+log "imagen: ${want:7:12}"
 
 # 5. Dependencias primero; la app espera a que Temporal responda (race de julio 2026)
 docker compose up -d postiz-redis temporal-elasticsearch postiz-temporal
@@ -55,8 +64,13 @@ for i in $(seq 1 36); do
   sleep 5
 done
 
-# 6. App
+# 6. App (comprueba que el contenedor corre la imagen pedida, no la anterior)
 docker compose up -d postiz
+running=$(docker inspect postiz-app -f '{{.Image}}')
+if [ "$running" != "$want" ]; then
+  log "postiz-app corre ${running:7:12}, se esperaba ${want:7:12}"
+  exit 1
+fi
 for i in $(seq 1 60); do
   code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4007/api/auth/can-register || true)
   if [ "$code" = "200" ]; then

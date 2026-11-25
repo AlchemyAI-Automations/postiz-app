@@ -68,6 +68,8 @@ El build de `main` publica `ghcr.io/alchemyai-automations/postiz-app:latest` y `
 ./deploy.sh rollback-<stamp>   # volver a la imagen anterior
 ```
 
+Para conectar Meta (Facebook Page e Instagram con Facebook Business), crea la app como se explica abajo y guarda sus credenciales desde tu terminal con `ssh -t alchemyai /home/alchemyai/Postiz/set-meta-app.sh`. El script pide el App ID y el App secret, este último sin mostrarlo en pantalla, y recrea la app.
+
 Con el rollback, `prisma db push` intentará quitar las columnas nuevas y se detendrá por la advertencia de pérdida de datos. En ese caso hay que restaurar el respaldo de la base de ese despliegue.
 
 El script hace esto, en orden:
